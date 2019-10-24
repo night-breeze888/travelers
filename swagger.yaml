@@ -1,0 +1,164 @@
+swagger: '2.0'
+info:
+  title: swagger说明文档　
+  description: 学习Swagger
+  version: 1.0.0
+host: 127.0.0.1
+basePath: /api
+schemes:
+  - http
+  - https
+produces:
+  - application/json
+paths:
+  /users:
+    get:
+      summary: 查询所有用户信息
+      description: 查询出所有用户的所有信息，用户名，别名
+      tags:
+        - Userte
+      responses:
+        '200':
+          description: 所有用户信息或者用户的集合信息
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/User'
+        default:
+          description: '操作异常,执行失败.返回信息描述错误详情'
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+    post:
+      description: 注册一个用户
+      parameters:
+        - name: username
+          in: formData
+          description: 用户名，不能使用已经被注册过的
+          required: true
+          type: string
+        - name: password
+          in: formData
+          description: 用户登陆密码，加密传输，加密存储
+          required: true
+          type: string
+        - name: alias
+          in: formData
+          type: string
+          description: 用户别名
+          required: false
+      responses:
+        '200':
+          description: 通过返回值来标示执行结果　返回true表示执行成功
+          schema:
+            type: object
+            properties:
+              status:
+                type: boolean
+                description: 是否成功
+        default:
+          description: '操作异常,执行失败.返回信息描述错误详情'
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+  '/users/{id}':
+    get:
+      summary: 根据用户名id查询该用户的所有信息
+      description: 查询出某个用户的所有信息，用户名，别名等
+      tags:
+        - User
+      parameters:
+        - name: id
+          in: path
+          description: '要查询的用户的用户名,它是唯一标识'
+          required: true
+          type: string
+      responses:
+        '200':
+          description: 所有用户信息或者用户的集合信息
+          schema:
+            $ref: '#/definitions/User'
+        default:
+          description: '操作异常,执行失败.返回信息描述错误详情'
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+    delete:
+      summary: 删除用户
+      description: 删除某个用户的信息，被删除的用户将无法登陆
+      parameters:
+        - name: id
+          in: path
+          type: string
+          required: true
+          description: 用户的唯一标示符
+      tags:
+        - User
+      responses:
+        '200':
+          description: 通过返回值来标示执行结果　返回true表示执行成功
+          schema:
+            type: object
+            properties:
+              status:
+                type: boolean
+                description: 是否成功
+        default:
+          description: '操作异常,执行失败.返回信息描述错误详情'
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+    patch:
+      summary: 用户信息修改
+      description: 修改用户信息(用户名别名)
+      parameters:
+        - name: id
+          in: path
+          description: '用户名,要修改的数据的唯一标识符'
+          required: true
+          type: string
+        - name: alias
+          in: formData
+          description: 新的用户别名
+          required: true
+          type: string
+      tags:
+        - User
+      responses:
+        '200':
+          description: 通过返回值来标示执行结果　返回true表示执行成功
+          schema:
+            type: object
+            properties:
+              status:
+                type: boolean
+                description: 是否成功
+        default:
+          description: '操作异常,执行失败.返回信息描述错误详情'
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+definitions:
+  User:
+    type: object
+    properties:
+      id:
+        type: string
+        description: 用户的唯一id
+      username:
+        type: string
+        description: 用户名
+      alias:
+        type: string
+        description: 别名
+ttt: 123

@@ -1,0 +1,242 @@
+#必要字段！Swagger规范版本，必须填2.0，否则该YAML将不能用于Swagger其他组件
+swagger: '2.0'
+#必要字段！描述API接口信息的元数据
+info:
+  #接口标题
+  title: swagger说明文档　
+  #接口文档的描述
+  description: 学习Swagger
+  #版本号
+  version: 1.0.0
+#Swagger会提供测试用例，host指定测试时的主机名，如果没有指定就是当前主机,可以指定端口．
+host: 127.0.0.1
+#定义的api的前缀，必须已/开头,测试用例的主机则为:host＋bashPath
+basePath: /api
+#指定调用接口的协议，必须是:"http", "https", "ws", "wss"．默认是http.-表示是个数组元素，即schemes接受一个数组参数
+schemes:
+  - http
+  - https
+#对应与http协议头request的Accept，调用者可接受类型,默认是*/*,定义的类型必须是http协议定义的 Mime Types,RestfulAPI一般定义成application/json
+#这两个是对所有接口的全局设置，在细化的接口中是还可以对应这两个属性来覆盖全局属性
+produces:
+  - application/json
+#必要字段!定义可有可操作的API
+paths:
+  /users:
+   #必要字段!定义HTTP操作方法，必须是http协议定义的方法
+    get:
+      #接口概要
+      summary: 查询所有用户信息
+      #接口描述
+      description: 查询出所有用户的所有信息，用户名，别名
+      #标签，方便快速过滤出User相关的接口
+      tags:
+        - Userte
+      #返回值描述，必要自动
+      responses:
+        #返回的http状态码
+        200:
+          description: 所有用户信息或者用户的集合信息
+          #描述返回值
+          schema:
+            #返回值格式，可选的有array,integer,string,boolean
+            type: array
+            #针对array,每个条目的格式,type定义为array．必要填写items
+            items:
+              #引用在definitions下定义的Users
+              $ref: '#/definitions/User'
+        #执行出错的处理
+        default:
+          description: 操作异常,执行失败.返回信息描述错误详情
+          schema:
+            #值类型
+            type: object
+            #定义属性
+            properties:
+            #属性名
+              message:
+                #类型
+                type: string
+    #即对于同一个url定义两个不同的方法，表示两个接口
+    post:
+      description: 注册一个用户
+      #请求参数
+      parameters:
+          #参数key
+        - name: username
+          #传递方法，formData表示表单传输，还有query表示url拼接传输，path表示作为url的一部分
+          #body表示http头承载参数(body只能有一个,有body不能在有其他的)
+          in: formData
+          #参数描述
+          description: 用户名，不能使用已经被注册过的
+          #参数是否必要，默认false
+          required: true
+          #参数类型，可选的包括array,integer,boolean,string.使用array必须使用items
+          type: string
+        - name: password
+          in: formData
+          description: 用户登陆密码，加密传输，加密存储
+          required: true
+          type: string
+        - name: alias
+          in: formData
+          type: string
+          description: 用户别名
+          #非必要字段
+          required: false
+      responses:
+        #返回的http状态码
+        200:
+          description: 通过返回值来标示执行结果　返回true表示执行成功
+          schema:
+             #值类型
+              type: object
+              #定义属性
+              properties:
+              #属性名
+                status:
+                  #类型
+                  type: boolean
+                  #描述
+                  description: 是否成功
+        #执行出错的处理
+        default:
+          description: 操作异常,执行失败.返回信息描述错误详情
+          schema:
+            #值类型
+            type: object
+            #定义属性
+            properties:
+            #属性名
+              message:
+                #类型
+                type: string
+  /users/{id}:
+    #{id}表示id为请求参数，例如/users/1,/users/2都是对该API的请求，此时id即为１和2
+    get:
+      summary: 根据用户名id查询该用户的所有信息
+      description: 查询出某个用户的所有信息，用户名，别名等
+      tags:
+        - User
+      parameters:
+        #上面接口中定义了{id}，则参数列表中必须包含参数id,并且请求类型为path
+        - name: id
+          in: path
+          description: 要查询的用户的用户名,它是唯一标识
+          required: true
+          type: string
+      responses:
+        200:
+          description: 所有用户信息或者用户的集合信息
+          schema:
+              $ref: '#/definitions/User'
+        default:
+          description: 操作异常,执行失败.返回信息描述错误详情
+          schema:
+              #值类型
+              type: object
+              #定义属性
+              properties:
+              #属性名
+                message:
+                  #类型
+                  type: string
+    #http定义的delete方法,删除一个资源
+    delete:
+      summary: 删除用户
+      description: 删除某个用户的信息，被删除的用户将无法登陆
+      parameters:
+        - name: id
+          in: path
+          type: string
+          required: true
+          description: 用户的唯一标示符
+      tags:
+        - User
+      responses:
+        200:
+          description: 通过返回值来标示执行结果　返回true表示执行成功
+          schema:
+             #值类型
+              type: object
+              #定义属性
+              properties:
+              #属性名
+                status:
+                  #类型
+                  type: boolean
+                  #描述
+                  description: 是否成功
+        default:
+          description: 操作异常,执行失败.返回信息描述错误详情
+          schema:
+              #值类型
+              type: object
+              #定义属性
+              properties:
+              #属性名
+                message:
+                  #类型
+                  type: string
+                  #描述错误信息
+    #http定义的patch方法，表示修改一个资源
+    patch:
+      summary: 用户信息修改
+      description: 修改用户信息(用户名别名)
+      parameters:
+        - name: id
+          in: path
+          description: 用户名,要修改的数据的唯一标识符
+          required: true
+          type: string
+        - name: alias
+          in: formData
+          description: 新的用户别名
+          required: true
+          type: string
+      tags:
+        - User
+      responses:
+        200:
+          description: 通过返回值来标示执行结果　返回true表示执行成功
+          schema:
+            #值类型
+              type: object
+              #定义属性
+              properties:
+              #属性名
+                status:
+                  #类型
+                  type: boolean
+                  #描述
+                  description: 是否成功
+        default:
+          description: 操作异常,执行失败.返回信息描述错误详情
+          schema:
+              #值类型
+              type: object
+              #定义属性
+              properties:
+              #属性名
+                message:
+                  #类型
+                  type: string
+                  #描述错误信息
+definitions:
+  User:
+    #值类型
+    type: object
+    #定义属性
+    properties:
+    #属性名
+      id:
+        #类型
+        type: string
+        #描述
+        description: 用户的唯一id
+      username:
+        type: string
+        description: 用户名
+      alias:
+        type: string
+        description: 别名
