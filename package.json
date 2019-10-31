@@ -1,5 +1,5 @@
 {
-  "name": "future1",
+  "name": "travel",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/node": "^12.12.3",
     "eosjs": "^20.0.0",
     "js-yaml": "^3.12.2",
     "knex": "^0.16.3",
