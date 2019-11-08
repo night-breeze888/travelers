@@ -1,19 +1,24 @@
 {
   "name": "travel",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "travel frame",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "lint": "npx eslint --ext .ts src",
+    "start": "tsc && node dist/index.js",
+    "watch-update": "nodemon --watch 'src/**/*' -e ts,tsx --exec 'ts-node' ./src/index.ts"
   },
-  "author": "",
+  "author": "zhangshuai",
   "license": "ISC",
   "dependencies": {
-    "@types/node": "^12.12.3",
-    "eosjs": "^20.0.0",
+    "joi": "^14.3.1",
+    "joi-to-json-schema": "^5.1.0",
     "js-yaml": "^3.12.2",
     "knex": "^0.16.3",
-    "koa": "^2.7.0",
+    "koa": "^2.11.0",
+    "koa-body": "^4.1.1",
     "koa-bodyparser": "^4.2.1",
     "koa-json": "^2.0.2",
     "koa-logger": "^3.2.0",
@@ -31,5 +36,18 @@
     "node-fetch": "^2.3.0",
     "nodemailer": "^5.1.1",
     "request": "^2.88.0"
+  },
+  "devDependencies": {
+    "@types/joi": "^14.3.4",
+    "@types/node": "^12.12.3",
+    "@types/koa": "^2.0.51",
+    "@types/koa-bodyparser": "^4.3.0",
+    "@types/koa-router": "^7.0.42",
+    "@types/koa2-cors": "^2.0.1",
+    "eslint": "^6.6.0",
+    "eslint-plugin-react": "^7.16.0",
+    "nodemon": "^1.19.4",
+    "ts-node": "^8.4.1",
+    "typescript": "^3.6.4"
   }
 }

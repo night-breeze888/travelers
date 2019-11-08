@@ -3,10 +3,11 @@ info:
   title: 投票系统接口文档
   description: 投票系统
   version: 1.0.0
-host: '127.0.0.1:3005/api'
+host: '127.0.0.1:3000'
 basePath: /v1
 schemes:
   - http
+  - https
 produces:
   - application/json
 paths:
@@ -42,6 +43,7 @@ paths:
       responses:
         '200':
           description: 通过返回值来标示执行结果　返回true表示执行成功
+          code: 123
         default:
           description: '操作异常,执行失败.返回信息描述错误详情'
   /admin/list:
