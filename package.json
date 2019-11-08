@@ -16,7 +16,7 @@
     "joi": "^14.3.1",
     "joi-to-json-schema": "^5.1.0",
     "js-yaml": "^3.12.2",
-    "knex": "^0.16.3",
+    "knex": "^0.20.1",
     "koa": "^2.11.0",
     "koa-body": "^4.1.1",
     "koa-bodyparser": "^4.2.1",
