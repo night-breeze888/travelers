@@ -3,18 +3,30 @@ import * as Koa from "koa";
 import * as Router from "koa-router";
 import * as joi from "joi";
 import * as convert from 'joi-to-json-schema'
+import * as serve from 'koa-static-server';
+import { join } from 'path';
 
-const defalut = {
+const swaggerDefalutSwagger = {
     swagger: '2.0',
     info: {
         title: '接口文档',
-        description: 'swagger默认生成系统',
+        description: 'swagger defalut',
         version: '1.0.0'
     },
     host: '127.0.0.1:3000',
     basePath: '/v1',
     schemes: ['http', 'https'],
-    produces: ['application/json']
+    produces: ['application/json'],
+    security: [
+        {
+            "bearerAuth": []
+        }
+    ],
+}
+
+let swagger = {
+    ...swaggerDefalutSwagger,
+    paths: {}
 }
 
 type Info = {
@@ -24,22 +36,26 @@ type Info = {
 }
 
 type SwaggerDefalut = {
-    swagger: string,
-    info: Info,
-    host: string,
-    basePath: string,
-    schemes: string[],
-    produces: string[],
+    swagger?: string,
+    info?: Info,
+    host?: string,
+    basePath?: string,
+    schemes?: string[],
+    produces?: string[],
 }
 
 interface Reqeust {
-    params?: any;
-    query?: any;
-    body?: any;
+    params?: {
+        [key: string]: joi.Schema
+    };
+    query?: {
+        [key: string]: joi.Schema
+    };
+    body?: joi.Schema;
 }
 
 interface Responses {
-    body?: any
+    body?: joi.Schema;
 }
 
 interface ApiItem {
@@ -47,7 +63,7 @@ interface ApiItem {
     method: string;
     summary: string;
     description?: string;
-    tags?: string;
+    tags?: string[];
     operationId: string;
     produces?: string[];
     req?: Reqeust;
@@ -56,13 +72,65 @@ interface ApiItem {
 
 type ApiItems = ApiItem[]
 
-async function apiManage(app: Koa<Koa.DefaultState, Koa.DefaultContext>, apis: object, controllers: object, swaggerDefalut: SwaggerDefalut) {
+async function apiManage(app: Koa<Koa.DefaultState, Koa.DefaultContext>, apis: object , controllers: object, swaggerDefalut : SwaggerDefalut = {}, config) {
+    const { host = '0.0.0.0', port } = config
     const router = new Router()
-    console.log(apis)
     Object.keys(apis).forEach(apiItem => {
         const items: ApiItems = apis[apiItem]
         items.forEach(item => {
-            console.log(item)
+            const { path, method, summary, tags = [apiItem],description, operationId, req, res } = item
+            const { query, body, params } = req
+            const resBody = res.body
+            if (!swagger.paths[path]) {
+                swagger.paths[path] = {}
+            }
+            console.log(tags)
+            swagger.paths[path][method] = {
+                summary,
+                description,
+                operationId,
+                parameters: [],
+                tags,
+                responses: {
+                    "200": {
+                        description: "successful",
+                    }
+                }
+            }
+
+
+            if (params) {
+                Object.keys(params).forEach(key => {
+                    const s = convert(params[key])
+                    s['in'] = "path"
+                    s["name"] = key
+                    swagger.paths[path][method].parameters.push(s)
+                })
+            }
+
+            if (query) {
+                Object.keys(query).forEach(key => {
+                    const s = convert(query[key])
+                    s['in'] = "query"
+                    s["name"] = key
+                    swagger.paths[path][method].parameters.push(s)
+                })
+            }
+
+            if (body) {
+                const s = convert(body)
+                swagger.paths[path][method].parameters.push({
+                    in: "body",
+                    name: "body",
+                    schema: s
+                })
+            }
+
+            if (resBody) {
+                const s = convert(resBody)
+                swagger.paths[path][method].responses['200']["schema"] = s
+            }
+
             router[item.method](item.path, async (ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>>, next) => {
                 // 验证
                 const _query = item.req.query || {}
@@ -72,13 +140,18 @@ async function apiManage(app: Koa<Koa.DefaultState, Koa.DefaultContext>, apis: o
                 let { query, body } = request
                 console.log(query, params, body)
                 try {
-                    await joi.validate(query, _query)
-                    await joi.validate(body, _body)
-                    await joi.validate(params, _params)
+                    let queryKeys = Object.keys(query)
+                    for (const queryKey of queryKeys) {
+                        await joi.validate(query[queryKey], _query[queryKey])
+                    }
+                    let paramsKeys = Object.keys(params)
+                    for (const paramsKey of paramsKeys) {
+                        await joi.validate(params[paramsKey], _params[paramsKey])
+                    }
+                    if (_body) await joi.validate(body, _body)
                 } catch (error) {
-                    console.log(error)
                     response.status = 400
-                    response.body = error
+                    response.body = error.message
                     return
                 }
 
@@ -90,12 +163,21 @@ async function apiManage(app: Koa<Koa.DefaultState, Koa.DefaultContext>, apis: o
                     response.status = error.code
                     response.body = error
                 }
+                await next()
             })
+
+            swaggerDefalut.host = `${host}:${port}`
+            swagger = { ...swagger, ...swaggerDefalut }
         })
+    })
+    
+    app.use(serve({ rootDir: join(__dirname, '../../swagger'), gzip: true, rootPath: '/document' }))
+    router.get('/swagger', (ctx) => {
+        ctx.body = swagger
     })
     app.use(router.routes())
     app.use(router.allowedMethods())
 }
 
 
-export { SwaggerDefalut, apiManage, ApiItems }
+export { SwaggerDefalut, apiManage, ApiItems ,swagger}
