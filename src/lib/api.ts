@@ -24,10 +24,7 @@ const swaggerDefalutSwagger = {
     ],
 }
 
-let swagger = {
-    ...swaggerDefalutSwagger,
-    paths: {}
-}
+
 
 type Info = {
     title: string,
@@ -70,13 +67,18 @@ interface ApiItem {
     res?: Responses;
 }
 
-type ApiItems = ApiItem[]
+type TravelApis = ApiItem[]
+
+let swagger = {
+    ...swaggerDefalutSwagger,
+    paths: {}
+}
 
 async function apiManage(app: Koa<Koa.DefaultState, Koa.DefaultContext>, apis: object , controllers: object, swaggerDefalut : SwaggerDefalut = {}, config) {
     const { host = '0.0.0.0', port } = config
     const router = new Router()
     Object.keys(apis).forEach(apiItem => {
-        const items: ApiItems = apis[apiItem]
+        const items: TravelApis = apis[apiItem]
         items.forEach(item => {
             const { path, method, summary, tags = [apiItem],description, operationId, req, res } = item
             const { query, body, params } = req
@@ -84,7 +86,6 @@ async function apiManage(app: Koa<Koa.DefaultState, Koa.DefaultContext>, apis: o
             if (!swagger.paths[path]) {
                 swagger.paths[path] = {}
             }
-            console.log(tags)
             swagger.paths[path][method] = {
                 summary,
                 description,
@@ -180,4 +181,4 @@ async function apiManage(app: Koa<Koa.DefaultState, Koa.DefaultContext>, apis: o
 }
 
 
-export { SwaggerDefalut, apiManage, ApiItems ,swagger}
+export { SwaggerDefalut, apiManage, TravelApis ,swagger}
