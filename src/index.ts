@@ -73,7 +73,6 @@ declare global {
         interface $config {
 
         }
-        
     }
 }
 
