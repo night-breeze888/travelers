@@ -5,6 +5,7 @@ import * as joi from "joi";
 import * as convert from 'joi-to-json-schema'
 import * as serve from 'koa-static-server';
 import { join } from 'path';
+import { TravelCtx } from "../index";
 
 const swaggerDefalutSwagger = {
     swagger: '2.0',
@@ -23,8 +24,6 @@ const swaggerDefalutSwagger = {
         }
     ],
 }
-
-
 
 type Info = {
     title: string,
@@ -58,7 +57,7 @@ interface Responses {
 interface ApiItem {
     path: string;
     method: string;
-    summary: string;
+    summary?: string;
     description?: string;
     tags?: string[];
     operationId: string;
@@ -74,13 +73,24 @@ let swagger = {
     paths: {}
 }
 
-async function apiManage(app: Koa<Koa.DefaultState, Koa.DefaultContext>, apis: object , controllers: object, swaggerDefalut : SwaggerDefalut = {}, config) {
-    const { host = '0.0.0.0', port } = config
+async function apiManage(
+    app: Koa<Koa.DefaultState, Koa.DefaultContext>,
+    apis: {
+        [key: string]: TravelApis
+    },
+    controllers: {
+        [key: string]: (ctx: TravelCtx) => Promise<any>
+    },
+    swaggerDefalut: SwaggerDefalut = {},
+    config) {
+    const { host = '127.0.0.1', port ='3000' } = config
     const router = new Router()
+    let verifyPath = {}
+    let verifyMethod = {}
     Object.keys(apis).forEach(apiItem => {
         const items: TravelApis = apis[apiItem]
         items.forEach(item => {
-            const { path, method, summary, tags = [apiItem],description, operationId, req, res } = item
+            const { path, method, summary = '默认', tags = [apiItem], description, operationId, req, res } = item
             const { query, body, params } = req
             const resBody = res.body
             if (!swagger.paths[path]) {
@@ -98,7 +108,6 @@ async function apiManage(app: Koa<Koa.DefaultState, Koa.DefaultContext>, apis: o
                     }
                 }
             }
-
 
             if (params) {
                 Object.keys(params).forEach(key => {
@@ -132,14 +141,16 @@ async function apiManage(app: Koa<Koa.DefaultState, Koa.DefaultContext>, apis: o
                 swagger.paths[path][method].responses['200']["schema"] = s
             }
 
-            router[item.method](item.path, async (ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>>, next) => {
+            let koaPath = path.replace(/}/g, '')
+            koaPath = koaPath.replace(/{/g, ':')
+            router[method](koaPath, async (ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>>, next) => {
                 // 验证
                 const _query = item.req.query || {}
                 const _body = item.req.body || {}
                 const _params = item.req.params || {}
                 let { params, request, response } = ctx
                 let { query, body } = request
-                console.log(query, params, body)
+                console.log(`query : ${query}`, `params:${params}`, `body:${body}`)
                 try {
                     let queryKeys = Object.keys(query)
                     for (const queryKey of queryKeys) {
@@ -161,17 +172,19 @@ async function apiManage(app: Koa<Koa.DefaultState, Koa.DefaultContext>, apis: o
                     const result = await controllers[item.operationId]
                     response.body = result
                 } catch (error) {
-                    response.status = error.code
+                    response.status = error.code || 500
                     response.body = error
+                    return
                 }
                 await next()
             })
 
-            swaggerDefalut.host = `${host}:${port}`
-            swagger = { ...swagger, ...swaggerDefalut }
+
         })
     })
-    
+
+    swaggerDefalut.host = `${host}:${port}`
+    swagger = { ...swagger, ...swaggerDefalut }
     app.use(serve({ rootDir: join(__dirname, '../../swagger'), gzip: true, rootPath: '/document' }))
     router.get('/swagger', (ctx) => {
         ctx.body = swagger
@@ -181,4 +194,4 @@ async function apiManage(app: Koa<Koa.DefaultState, Koa.DefaultContext>, apis: o
 }
 
 
-export { SwaggerDefalut, apiManage, TravelApis ,swagger}
+export { SwaggerDefalut, apiManage, TravelApis, swagger }

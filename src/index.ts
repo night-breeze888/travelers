@@ -6,10 +6,8 @@ import * as  bodyparser from 'koa-bodyparser';
 import * as json from 'koa-json';
 import * as http from 'http';
 import chalk from 'chalk';
+import { srvsCode, Code } from './lib/code'
 
-
-type Before = (app: Koa<Koa.DefaultState, Koa.DefaultContext>) => void
-type After = (app: Koa<Koa.DefaultState, Koa.DefaultContext>, obj: object) => void
 type TravelConfig<T> = {
     host?: String,
     port: number,
@@ -21,42 +19,37 @@ type Args = {
         [key: string]: TravelApis
     },
     controllers: {
-        [key:string]: (ctx:Koa.ParameterizedContext<Koa.DefaultState, Koa.DefaultContext>) => Promise<any> 
+        [key: string]: (ctx: Koa.ParameterizedContext<Koa.DefaultState, Koa.DefaultContext>) => Promise<any>
     }
 }
 
 type TravelOption = {
     config: TravelConfig<any>,
-    before?: Before,
+    before?: (app: Koa<Koa.DefaultState, Koa.DefaultContext>) => void,
     args: Args,
-    srvs?: object,
+    srvs?: {
+        [key: string]: any
+    },
     swaggerDefalut?: SwaggerDefalut,
-    after?: After
+    after?: (app: Koa<Koa.DefaultState, Koa.DefaultContext>, obj: object) => void
 }
 
 
 export async function travel(option: TravelOption) {
     const app = new Koa()
     const { config, before, args, swaggerDefalut, after, srvs } = option
-    const { host = '0.0.0.0', port } = config
+    const { host = '0.0.0.0', port ='3000' } = config
+
     if (before) before(app)
     app.use(bodyparser({
         enableTypes: ['json', 'form', 'text']
     }))
     app.use(async (ctx, next) => {
+        await srvsCode(srvs)
         ctx.srvs = srvs
         await next()
     })
     app.use(json({}))
-    // if (args instanceof Array) {
-    //     for (const arg of args) {
-    //         const { apis, controllers } = arg
-    //         await apiManage(app, apis, controllers, swaggerDefalut, config)
-    //     }
-    // } else {
-    //     const { apis, controllers } = args
-    //     await apiManage(app, apis, controllers, swaggerDefalut, config)
-    // }
     const { apis, controllers } = args
     await apiManage(app, apis, controllers, swaggerDefalut, config)
     if (after) after(app, { swagger })
@@ -72,7 +65,29 @@ type App = Koa<Koa.DefaultState, Koa.DefaultContext>
 type Ctx = Koa.ParameterizedContext<Koa.DefaultState, Koa.DefaultContext>
 
 
-export { TravelApis, TravelOption, App, Ctx }
+declare global {
+    namespace Travel {
+        interface Srvs {
+           
+        }
+        interface $config {
+
+        }
+        
+    }
+}
 
 
+interface TravelCtx extends Ctx {
+    srvs: Travel.Srvs
+    $config: Travel.$config
+}
 
+
+interface TravelApp extends App {
+    srvs: Travel.Srvs
+    $config: Travel.$config
+}
+
+
+export { TravelApis, TravelOption, App, Ctx, TravelCtx, TravelApp,Code }

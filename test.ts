@@ -35,6 +35,15 @@
 import * as convert from 'joi-to-json-schema'
 import * as joi from 'joi'
 
+declare global{
+    namespace A {
+        interface C{
+             b: {
+                    a:number
+               }
+        }
+   }
+}
 
 
 const joiSchema = joi.object({
