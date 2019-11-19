@@ -1,7 +1,5 @@
-# travel
 
-#### 项目介绍
-投票系统
+#### travel
 1. 基于koa2基础上搭建升级
 2. swagger自动生成接口文档测试
 3. api 目录下是接口名编写及参数验证
@@ -23,15 +21,26 @@
 - package-lock.json
 - package.json    --包管理
 
-#### 安装教程
+#### 使用
+1. npm i travel
+2. node app.js
 
-1. git clone
-2. npm i
-3. node app.js
+```
+const option: TravelOption = {
+  config,
+  before: function (app) {
+    app.use(cors());
+  },
+  srvs,
+  args: {
+    apis,
+    controllers,
+  },
+  after: function (app, obj: any) {
 
-#### 使用说明
-因redis和mysql用的服务器的
-直接可以启动
-
+  }
+}
+travel(option)
+```
 
 
