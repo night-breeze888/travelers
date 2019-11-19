@@ -150,7 +150,6 @@ async function apiManage(
             let koaPath = path.replace(/}/g, '')
             koaPath = koaPath.replace(/{/g, ':')
             router[method](koaPath, async (ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>>, next) => {
-                console.log(koaPath)
                 // 验证
                 const _query = item.req.query || {}
                 const _body = item.req.body || {}
@@ -177,7 +176,7 @@ async function apiManage(
                 // 处理
                 try {
                     const result = await controllers[item.operationId]
-                    response.body = result
+                    if(result) response.body = result
                 } catch (error) {
                     response.status = error.code || 500
                     response.body = error

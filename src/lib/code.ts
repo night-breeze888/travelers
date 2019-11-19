@@ -38,9 +38,9 @@ function HttpCode(codeAll: CodeType) {
     }
     Object.keys(codeAll).forEach(key => {
         if (!key.includes('$')) {
-            result[`${key}`] = codeAll[key]
+            result[key] = codeAll[key]
         } else {
-            result[`${key}`] = function (args: { [key: string]: string }) {
+            result[key] = function (args: { [key: string]: string }) {
                 let msg = codeAll[key].msg
                 Object.keys(args).forEach(objKey => {
                     let replaceObj = `$${objKey}`
