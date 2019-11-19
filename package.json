@@ -1,7 +1,7 @@
 {
   "name": "travel",
   "version": "1.0.0",
-  "description": "travel frame",
+  "description": "i wanna write code like travel",
   "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -10,8 +10,22 @@
     "start": "tsc && node dist/index.js",
     "watch-update": "nodemon --watch 'src/**/*' -e ts,tsx --exec 'ts-node' ./src/index.ts"
   },
-  "author": "zhangshuai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CQzhangshuai/travel.git"
+  },
+  "keywords": [
+    "koa2",
+    "joi",
+    "swagger",
+    "knex"
+  ],
+  "author": "cqzhangshuai",
   "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/CQzhangshuai/travel/issues"
+  },
+  "homepage": "https://github.com/CQzhangshuai/travel#readme",
   "dependencies": {
     "joi": "^14.3.1",
     "joi-to-json-schema": "^5.1.0",
