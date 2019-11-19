@@ -21,7 +21,7 @@ export function apiVerify(apis: ManageApis, controllers: ManageControllers) {
     })
 
     Object.keys(controllers).forEach(data => {
-        if (!verifyOperationId) {
+        if (!verifyOperationId[data]) {
             verifyOperationId[data] = controllers[data]
         } else {
             throw `controllers operationId:${data} already exist`
