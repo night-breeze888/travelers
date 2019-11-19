@@ -37,26 +37,28 @@ type TravelOption = {
 
 export async function travel(option: TravelOption) {
     const app = new Koa()
-    const { config, before, args, swaggerDefalut, after, srvs } = option
-    const { host = '0.0.0.0', port ='3000' } = config
-
+    let { config, before, args, swaggerDefalut, after, srvs } = option
+    const { host = '0.0.0.0', port = '3000' } = config
+    const { apis, controllers } = args
+    
+    srvs = srvsCode(srvs)
+    
     if (before) before(app)
     app.use(bodyparser({
         enableTypes: ['json', 'form', 'text']
     }))
     app.use(async (ctx, next) => {
-        await srvsCode(srvs)
         ctx.srvs = srvs
         await next()
     })
     app.use(json({}))
-    const { apis, controllers } = args
     await apiManage(app, apis, controllers, swaggerDefalut, config)
     if (after) after(app, { swagger })
 
     app.listen(port, `${host}`)
 
     console.log(chalk.bold.red(`\ntravel start host:${host} prot:${port}`))
+    
 }
 
 
@@ -68,7 +70,7 @@ type Ctx = Koa.ParameterizedContext<Koa.DefaultState, Koa.DefaultContext>
 declare global {
     namespace Travel {
         interface Srvs {
-           
+            [k: string]: any;
         }
         interface $config {
 

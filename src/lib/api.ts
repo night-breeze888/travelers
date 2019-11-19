@@ -6,6 +6,8 @@ import * as convert from 'joi-to-json-schema'
 import * as serve from 'koa-static-server';
 import { join } from 'path';
 import { TravelCtx } from "../index";
+import chalk from 'chalk';
+import * as verify from "./verify";
 
 const swaggerDefalutSwagger = {
     swagger: '2.0',
@@ -73,20 +75,24 @@ let swagger = {
     paths: {}
 }
 
+type ManageApis = {
+    [key: string]: TravelApis
+}
+
+type ManageControllers = {
+    [key: string]: (ctx: TravelCtx) => Promise<any>
+}
+
 async function apiManage(
     app: Koa<Koa.DefaultState, Koa.DefaultContext>,
-    apis: {
-        [key: string]: TravelApis
-    },
-    controllers: {
-        [key: string]: (ctx: TravelCtx) => Promise<any>
-    },
+    apis: ManageApis,
+    controllers: ManageControllers,
     swaggerDefalut: SwaggerDefalut = {},
     config) {
-    const { host = '127.0.0.1', port ='3000' } = config
+    const { port = '3000' } = config
+    const host = '127.0.0.1'
     const router = new Router()
-    let verifyPath = {}
-    let verifyMethod = {}
+    verify.apiVerify(apis, controllers)
     Object.keys(apis).forEach(apiItem => {
         const items: TravelApis = apis[apiItem]
         items.forEach(item => {
@@ -144,6 +150,7 @@ async function apiManage(
             let koaPath = path.replace(/}/g, '')
             koaPath = koaPath.replace(/{/g, ':')
             router[method](koaPath, async (ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>>, next) => {
+                console.log(koaPath)
                 // 验证
                 const _query = item.req.query || {}
                 const _body = item.req.body || {}
@@ -186,6 +193,7 @@ async function apiManage(
     swaggerDefalut.host = `${host}:${port}`
     swagger = { ...swagger, ...swaggerDefalut }
     app.use(serve({ rootDir: join(__dirname, '../../swagger'), gzip: true, rootPath: '/document' }))
+    console.log(chalk.bold.red(`\ndocument you can click: http://${host}:${port}/document`))
     router.get('/swagger', (ctx) => {
         ctx.body = swagger
     })
@@ -194,4 +202,4 @@ async function apiManage(
 }
 
 
-export { SwaggerDefalut, apiManage, TravelApis, swagger }
+export { SwaggerDefalut, apiManage, TravelApis, swagger, ManageApis, ManageControllers }

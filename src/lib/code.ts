@@ -30,15 +30,17 @@ const Code = {
 }
 
 
-function HttpCode(codeAll: { [key: string]: { code: number, msg: string } }) {
-    let result: {
-        [key:string]:any
+type CodeType = { [key: string]: { code: number, msg: string } }
+
+function HttpCode(codeAll: CodeType) {
+    let result: { [key: string]: any } = {
+        
     }
     Object.keys(codeAll).forEach(key => {
         if (!key.includes('$')) {
-            result[key] = codeAll[key]
+            result[`${key}`] = codeAll[key]
         } else {
-            result[key] = function (args: { [key: string]: string }) {
+            result[`${key}`] = function (args: { [key: string]: string }) {
                 let msg = codeAll[key].msg
                 Object.keys(args).forEach(objKey => {
                     let replaceObj = `$${objKey}`
@@ -58,6 +60,7 @@ function srvsCode(srvs) {
         ...Code
     }
     srvs.codes = HttpCode(codeAll)
+    return srvs
 }
 
 export { srvsCode, Code } 
