@@ -1,10 +1,5 @@
 
-#### travel
-1. 基于koa2基础上搭建升级
-2. swagger自动生成接口文档测试
-3. api 目录下是接口名编写及参数验证
-4. controllers 下来是逻辑处理
-5. 数据库才用knex库，官网https://knexjs.org/
+### travel
 
 #### 使用
 1. 安装
