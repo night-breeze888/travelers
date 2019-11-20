@@ -57,7 +57,7 @@ export async function travel(option: TravelOption) {
 
     app.listen(port, `${host}`)
 
-    console.log(chalk.bold.red(`\ntravel start host:${host} prot:${port}`))
+    console.log(chalk.bold.red(`travel start host:${host} prot:${port}`))
 
 }
 

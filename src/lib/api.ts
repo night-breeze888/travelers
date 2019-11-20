@@ -192,7 +192,7 @@ async function apiManage(
     swaggerDefalut.host = `${host}:${port}`
     swagger = { ...swagger, ...swaggerDefalut }
     app.use(serve({ rootDir: join(__dirname, '../../swagger'), gzip: true, rootPath: '/document' }))
-    console.log(chalk.bold.red(`\ndocument you can click: http://${host}:${port}/document`))
+    console.log(chalk.bold.red(`document you can click: http://${host}:${port}/document`))
     router.get('/swagger', (ctx) => {
         ctx.body = swagger
     })
