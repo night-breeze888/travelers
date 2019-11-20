@@ -1,29 +1,32 @@
 
-### travelers
+## travelers
 
-#### 使用
+### 使用
 1. 安装
 ```
 npm i travelers
 ```
-2. 使用
-```
-import { travelers, travelersOption, travelersApis } from 'travelers'
-```
 
-#### src/apis/api.ts
+2. 使用
+import { travelers, travelersOption, travelersApis, travelersCtx } from 'travelers'
+
+### src/apis/api.ts
 ```
+import { travelersApis } from 'travelers'
 let items: travelersApis = [
     {
         path: '/everyDay',
         method: 'get',
-        summary: '获取游戏每日活动列表',
-        description: '获取游戏每日活动列表',
-        operationId: 'everyDay_list',
+        summary: '概要',
+        description: '描述',
+        operationId: 'controllerKey',
         req: {
             query: {
                 name: joi.string().required().regex(/^\w+$/)
-            }
+            },
+            body: joi.object({
+                name: joi.string()
+            })
         },
         res: {
             body: joi.object({
@@ -34,8 +37,27 @@ let items: travelersApis = [
 ]
 ```
 
-#### src/controllers/controller.ts
+### src/controllers/controller.ts
 ```
+import { travelersCtx } from 'travelers'
+export async function everyDay_list(ctx: travelersCtx) {
+    let {  body, srvs } = ctx
+    const { knex  } = srvs
+    ctx.body = {
+        code: 200
+    }
+}
+
+```
+
+### src/index.js
+```
+import { travelersOption, travelers } from 'travelers'
+import * as  apis from './apis/index'
+import * as  srvs from './srvs/index'
+import * as controllers from './controllers/index'
+import config from './config/index'
+
 const option: travelersOption = {
   config,
   before: function (app) {
@@ -50,12 +72,9 @@ const option: travelersOption = {
 
   }
 }
-```
-
-### src/index.js
-```
 travelers(option)
 ```
+
 
 
 
