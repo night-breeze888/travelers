@@ -4,7 +4,7 @@ import * as Koa from "koa";
 import { SwaggerDefalut, apiManage, travelersApis, swagger } from './lib/api'
 import * as  bodyparser from 'koa-bodyparser';
 import * as json from 'koa-json';
-import chalk from 'chalk';
+import * as  chalk from 'chalk';
 import { srvsCode, Code } from './lib/code'
 import * as Router from "koa-router";
 
@@ -19,7 +19,7 @@ type Args = {
         [key: string]: travelersApis
     },
     controllers: {
-        [key: string]: (ctx: Koa.ParameterizedContext<Koa.DefaultState, Koa.DefaultContext>) => Promise<any>
+        [key: string]: (ctx: travelersCtx) => Promise<any>
     }
 }
 

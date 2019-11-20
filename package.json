@@ -1,6 +1,6 @@
 {
   "name": "travelers",
-  "version": "1.0.1",
+  "version": "1.0.5",
   "description": "I wanna write code like travelers",
   "main": "dist/index.js",
   "scripts": {
@@ -27,6 +27,7 @@
   },
   "homepage": "https://github.com/CQzhangshuai/travelers#readme",
   "dependencies": {
+    "chalk": "^3.0.0",
     "joi": "^14.3.1",
     "joi-to-json-schema": "^5.1.0",
     "koa": "^2.11.0",

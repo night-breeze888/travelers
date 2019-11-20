@@ -50,7 +50,7 @@ export async function everyDay_list(ctx: travelersCtx) {
 
 ```
 
-### src/index.js
+### src/index.ts
 ```
 import { travelersOption, travelers } from 'travelers'
 import * as  apis from './apis/index'

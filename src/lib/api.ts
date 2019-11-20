@@ -6,7 +6,7 @@ import * as convert from 'joi-to-json-schema'
 import * as serve from 'koa-static-server';
 import { join } from 'path';
 import { travelersCtx } from "../index";
-import chalk from 'chalk';
+import * as chalk from 'chalk';
 import * as verify from "./verify";
 
 const swaggerDefalutSwagger = {
@@ -176,7 +176,7 @@ async function apiManage(
                 // 处理
                 try {
                     const result = await controllers[item.operationId]
-                    if(result) response.body = result
+                    if (result) response.body = result
                 } catch (error) {
                     response.status = error.code || 500
                     response.body = error
