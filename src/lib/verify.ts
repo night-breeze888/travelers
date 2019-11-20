@@ -1,12 +1,12 @@
 
 
-import { ManageApis, ManageControllers, TravelApis } from './api'
+import { ManageApis, ManageControllers, travelersApis } from './api'
 
 export function apiVerify(apis: ManageApis, controllers: ManageControllers) {
     let verifyPath = {}
     let verifyOperationId = {}
     Object.keys(apis).forEach(apiItem => {
-        const items: TravelApis = apis[apiItem]
+        const items: travelersApis = apis[apiItem]
         items.forEach(item => {
             const { path, method, operationId } = item
             if (!verifyPath[path]) {

@@ -1,7 +1,7 @@
 {
   "name": "travelers",
   "version": "1.0.1",
-  "description": "I wanna write code like travel",
+  "description": "I wanna write code like travelers",
   "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/CQzhangshuai/travel.git"
+    "url": "git+https://github.com/CQzhangshuai/travelers.git"
   },
   "keywords": [
     "koa2",
@@ -23,9 +23,9 @@
   "author": "cqzhangshuai",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/CQzhangshuai/travel/issues"
+    "url": "https://github.com/CQzhangshuai/travelers/issues"
   },
-  "homepage": "https://github.com/CQzhangshuai/travel#readme",
+  "homepage": "https://github.com/CQzhangshuai/travelers#readme",
   "dependencies": {
     "joi": "^14.3.1",
     "joi-to-json-schema": "^5.1.0",

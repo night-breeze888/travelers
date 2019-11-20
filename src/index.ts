@@ -1,14 +1,14 @@
 
 
 import * as Koa from "koa";
-import { SwaggerDefalut, apiManage, TravelApis, swagger } from './lib/api'
+import { SwaggerDefalut, apiManage, travelersApis, swagger } from './lib/api'
 import * as  bodyparser from 'koa-bodyparser';
 import * as json from 'koa-json';
 import chalk from 'chalk';
 import { srvsCode, Code } from './lib/code'
 import * as Router from "koa-router";
 
-type TravelConfig<T> = {
+type travelersConfig<T> = {
     host?: String,
     port: number,
 } & T
@@ -16,15 +16,15 @@ type TravelConfig<T> = {
 
 type Args = {
     apis: {
-        [key: string]: TravelApis
+        [key: string]: travelersApis
     },
     controllers: {
         [key: string]: (ctx: Koa.ParameterizedContext<Koa.DefaultState, Koa.DefaultContext>) => Promise<any>
     }
 }
 
-type TravelOption = {
-    config: TravelConfig<any>,
+type travelersOption = {
+    config: travelersConfig<any>,
     before?: (app: Koa<Koa.DefaultState, Koa.DefaultContext>) => void,
     args: Args,
     srvs?: {
@@ -35,7 +35,7 @@ type TravelOption = {
 }
 
 
-export async function travel(option: TravelOption) {
+export async function travelers(option: travelersOption) {
     const app = new Koa()
     let { config, before, args, swaggerDefalut, after, srvs } = option
     const { host = '0.0.0.0', port = '3000' } = config
@@ -57,7 +57,7 @@ export async function travel(option: TravelOption) {
 
     app.listen(port, `${host}`)
 
-    console.log(chalk.bold.red(`travel start host:${host} prot:${port}`))
+    console.log(chalk.bold.red(`travelers start host:${host} prot:${port}`))
 
 }
 
@@ -69,7 +69,7 @@ type APPCtx = Koa.ParameterizedContext<Koa.DefaultState, Koa.DefaultContext>
 type RouterCtx = Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>>
 
 declare global {
-    namespace Travel {
+    namespace travelers {
         interface Srvs {
             [k: string]: any;
         }
@@ -80,18 +80,18 @@ declare global {
 }
 
 
-interface TravelCtx extends RouterCtx {
-    srvs: Travel.Srvs
-    $config: Travel.$config
+interface travelersCtx extends RouterCtx {
+    srvs: travelers.Srvs
+    $config: travelers.$config
 }
 
 
-interface TravelApp extends App {
-    srvs: Travel.Srvs
-    $config: Travel.$config
+interface travelersApp extends App {
+    srvs: travelers.Srvs
+    $config: travelers.$config
 }
 
-let a: TravelCtx
+let a: travelersCtx
 
 
-export { TravelApis, TravelOption, App, APPCtx, RouterCtx, TravelCtx, TravelApp, Code }
+export { travelersApis, travelersOption, App, APPCtx, RouterCtx, travelersCtx, travelersApp, Code }

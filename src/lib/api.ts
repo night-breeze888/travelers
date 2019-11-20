@@ -5,7 +5,7 @@ import * as joi from "joi";
 import * as convert from 'joi-to-json-schema'
 import * as serve from 'koa-static-server';
 import { join } from 'path';
-import { TravelCtx } from "../index";
+import { travelersCtx } from "../index";
 import chalk from 'chalk';
 import * as verify from "./verify";
 
@@ -68,7 +68,7 @@ interface ApiItem {
     res?: Responses;
 }
 
-type TravelApis = ApiItem[]
+type travelersApis = ApiItem[]
 
 let swagger = {
     ...swaggerDefalutSwagger,
@@ -76,11 +76,11 @@ let swagger = {
 }
 
 type ManageApis = {
-    [key: string]: TravelApis
+    [key: string]: travelersApis
 }
 
 type ManageControllers = {
-    [key: string]: (ctx: TravelCtx) => Promise<any>
+    [key: string]: (ctx: travelersCtx) => Promise<any>
 }
 
 async function apiManage(
@@ -94,7 +94,7 @@ async function apiManage(
     const router = new Router()
     verify.apiVerify(apis, controllers)
     Object.keys(apis).forEach(apiItem => {
-        const items: TravelApis = apis[apiItem]
+        const items: travelersApis = apis[apiItem]
         items.forEach(item => {
             const { path, method, summary = '默认', tags = [apiItem], description, operationId, req, res } = item
             const { query, body, params } = req
@@ -201,4 +201,4 @@ async function apiManage(
 }
 
 
-export { SwaggerDefalut, apiManage, TravelApis, swagger, ManageApis, ManageControllers }
+export { SwaggerDefalut, apiManage, travelersApis, swagger, ManageApis, ManageControllers }
