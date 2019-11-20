@@ -1,14 +1,15 @@
 
-### travel
+### travelers
 
 #### 使用
 1. 安装
 ```
-npm i travel
+npm i travelers
 ```
 2. 使用
 ```
-const option: TravelOption = {
+import { travelers, travelersOption } from 'travelers'
+const option: travelersOption = {
   config,
   before: function (app) {
     app.use(cors());
@@ -22,7 +23,7 @@ const option: TravelOption = {
 
   }
 }
-travel(option)
+travelers(option)
 ```
 
 
