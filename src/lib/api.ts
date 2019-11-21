@@ -1,13 +1,13 @@
 
-import * as Koa from "koa";
-import * as Router from "koa-router";
+
 import * as joi from "joi";
 import * as convert from 'joi-to-json-schema'
-import * as serve from 'koa-static-server';
 import { join } from 'path';
-import { travelersCtx } from "../index";
+import * as path from 'path';
+import { Request, Response, Express, NextFunction } from "../index";
 import * as chalk from 'chalk';
 import * as verify from "./verify";
+import * as express from "express";
 
 const swaggerDefalutSwagger = {
     swagger: '2.0',
@@ -80,18 +80,17 @@ type ManageApis = {
 }
 
 type ManageControllers = {
-    [key: string]: (ctx: travelersCtx) => Promise<any>
+    [key: string]: (req: Request, res: Response) => Promise<any>
 }
 
 async function apiManage(
-    app: Koa<Koa.DefaultState, Koa.DefaultContext>,
+    app: Express,
     apis: ManageApis,
     controllers: ManageControllers,
     swaggerDefalut: SwaggerDefalut = {},
     config) {
     const { port = '3000' } = config
     const host = '127.0.0.1'
-    const router = new Router()
     verify.apiVerify(apis, controllers)
     Object.keys(apis).forEach(apiItem => {
         const items: travelersApis = apis[apiItem]
@@ -149,55 +148,51 @@ async function apiManage(
 
             let koaPath = path.replace(/}/g, '')
             koaPath = koaPath.replace(/{/g, ':')
-            router[method](koaPath, async (ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>>, next) => {
-                // 验证
-                const _query = item.req.query || {}
-                const _body = item.req.body || {}
-                const _params = item.req.params || {}
-                let { params, request, response } = ctx
-                let { query, body } = request
-                console.log(`query : ${query}`, `params:${params}`, `body:${body}`)
-                try {
-                    let queryKeys = Object.keys(query)
-                    for (const queryKey of queryKeys) {
-                        await joi.validate(query[queryKey], _query[queryKey])
+            app[method](koaPath, (req: Request, res: Response, next: NextFunction) => {
+                (async function () {
+                    // 验证
+                    const _query = item.req.query || {}
+                    const _body = item.req.body || {}
+                    const _params = item.req.params || {}
+                    let { params, query, body } = req
+                    try {
+                        let queryKeys = Object.keys(_query)
+                        for (const queryKey of queryKeys) {
+                            await joi.validate(query[queryKey], _query[queryKey])
+                        }
+                        let paramsKeys = Object.keys(_params)
+                        for (const paramsKey of paramsKeys) {
+                            await joi.validate(params[paramsKey], _params[paramsKey])
+                        }
+                        if (_body) await joi.validate(body, _body)
+                    } catch (error) {
+                        res.status(400).send(error)
+                        return
                     }
-                    let paramsKeys = Object.keys(params)
-                    for (const paramsKey of paramsKeys) {
-                        await joi.validate(params[paramsKey], _params[paramsKey])
-                    }
-                    if (_body) await joi.validate(body, _body)
-                } catch (error) {
-                    response.status = 400
-                    response.body = error.message
-                    return
-                }
 
-                // 处理
-                try {
-                    const result = await controllers[item.operationId]
-                    if (result) response.body = result
-                } catch (error) {
-                    response.status = error.code || 500
-                    response.body = error
-                    return
-                }
-                await next()
+                    try {
+                        if (controllers[item.operationId]) {
+                            const result = await controllers[item.operationId](req,res)
+                            if (result) res.json(result)
+                        } else {
+                            next()
+                        }
+                    } catch (error) {
+                        res.status(error.code || 500).send(error)
+                    }
+                })()
             })
-
-
         })
     })
 
     swaggerDefalut.host = `${host}:${port}`
     swagger = { ...swagger, ...swaggerDefalut }
-    app.use(serve({ rootDir: join(__dirname, '../../swagger'), gzip: true, rootPath: '/document' }))
+    app.use('/document', express.static(path.join(__dirname, '../../swagger')));
+
     console.log(chalk.bold.red(`document you can click: http://${host}:${port}/document`))
-    router.get('/swagger', (ctx) => {
-        ctx.body = swagger
+    app.get('/swagger', (req, res, next) => {
+        res.send(swagger)
     })
-    app.use(router.routes())
-    app.use(router.allowedMethods())
 }
 
 

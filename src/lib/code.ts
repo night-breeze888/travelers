@@ -29,24 +29,36 @@ const Code = {
     }
 }
 
-
+import { Request, Response, Express, NextFunction } from "../index";
 type CodeType = { [key: string]: { code: number, msg: string } }
 
+type Result = {
+    [key: string]: {
+        resJson: (res: Response, args?: { [key: string]: string }) => void
+    }
+}
+
 function HttpCode(codeAll: CodeType) {
-    let result: { [key: string]: any } = {
-        
+    let result: Result = {
+
     }
     Object.keys(codeAll).forEach(key => {
         if (!key.includes('$')) {
-            result[key] = codeAll[key]
+            result[key] = {
+                resJson: function (res) {
+                    res.status(codeAll[key].code).send(codeAll[key])
+                }
+            }
         } else {
-            result[key] = function (args: { [key: string]: string }) {
-                let msg = codeAll[key].msg
-                Object.keys(args).forEach(objKey => {
-                    let replaceObj = `$${objKey}`
-                    msg = msg.replace(replaceObj, args[objKey])
-                })
-                return msg
+            result[key] = {
+                resJson: function (res, args) {
+                    let obj = codeAll[key]
+                    Object.keys(args).forEach(objKey => {
+                        let replaceObj = `$${objKey}`
+                        obj.msg = obj.msg.replace(replaceObj, args[objKey])
+                    })
+                    res.status(codeAll[key].code).send(obj)
+                }
             }
         }
     })
