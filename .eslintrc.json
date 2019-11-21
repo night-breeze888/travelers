@@ -1,0 +1,35 @@
+{
+    "parser": "@typescript-eslint/parser",
+    "plugins": [
+        "@typescript-eslint"
+    ],
+    "parserOptions": {
+        "ecmaVersion": 6,
+        "sourceType": "module",
+        "ecmaFeatures": {
+            "modules": true
+        }
+    },
+    "rules": {
+        "no-multi-spaces": 1,
+        // 禁止使用 var
+        "no-var": "error",
+        // 优先使用 interface 而不是 type
+        "@typescript-eslint/consistent-type-definitions": [
+            "error",
+            "interface"
+        ],
+        "quotes": [
+            1,
+            "double"
+        ],
+        "semi": [
+            2,
+            "always"
+        ],
+        "indent": [
+            2,
+            4
+        ]
+    }
+}

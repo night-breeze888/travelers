@@ -1,38 +1,38 @@
 const Code = {
     ok: {
         code: 200,
-        msg: 'success'
+        msg: "success"
     },
     paramsErr: {
         code: 400,
-        msg: 'params err'
+        msg: "params err"
     },
     notAuthorization: {
         code: 401,
-        msg: 'not authorization'
+        msg: "not authorization"
     },
     rejectVisit: {
         code: 403,
-        msg: 'reject visit'
+        msg: "reject visit"
     },
     notfind: {
         code: 404,
-        msg: 'not find'
+        msg: "not find"
     },
     serverErr: {
         code: 500,
-        msg: 'server err'
+        msg: "server err"
     },
     $message: {
         code: 400,
-        msg: '$message'
+        msg: "$message"
     }
-}
+};
 
 import { Request, Response, Express, NextFunction } from "../index";
-type CodeType = { [key: string]: { code: number, msg: string } }
+interface CodeType { [key: string]: { code: number, msg: string } }
 
-type Result = {
+interface Result {
     [key: string]: {
         resJson: (res: Response, args?: { [key: string]: string }) => void
     }
@@ -41,38 +41,38 @@ type Result = {
 function HttpCode(codeAll: CodeType) {
     let result: Result = {
 
-    }
+    };
     Object.keys(codeAll).forEach(key => {
-        if (!key.includes('$')) {
+        if (!key.includes("$")) {
             result[key] = {
                 resJson: function (res) {
-                    res.status(codeAll[key].code).send(codeAll[key])
+                    res.status(codeAll[key].code).send(codeAll[key]);
                 }
-            }
+            };
         } else {
             result[key] = {
                 resJson: function (res, args) {
-                    let obj = codeAll[key]
+                    let obj = codeAll[key];
                     Object.keys(args).forEach(objKey => {
-                        let replaceObj = `$${objKey}`
-                        obj.msg = obj.msg.replace(replaceObj, args[objKey])
-                    })
-                    res.status(codeAll[key].code).send(obj)
+                        let replaceObj = `$${objKey}`;
+                        obj.msg = obj.msg.replace(replaceObj, args[objKey]);
+                    });
+                    res.status(codeAll[key].code).send(obj);
                 }
-            }
+            };
         }
-    })
-    return result
+    });
+    return result;
 }
 
 function srvsCode(srvs) {
-    let { code = {} } = srvs
+    let { code = {} } = srvs;
     const codeAll = {
         ...code,
         ...Code
-    }
-    srvs.codes = HttpCode(codeAll)
-    return srvs
+    };
+    srvs.codes = HttpCode(codeAll);
+    return srvs;
 }
 
-export { srvsCode, Code } 
+export { srvsCode, Code }; 

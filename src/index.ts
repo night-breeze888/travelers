@@ -1,18 +1,16 @@
-
-
-import { SwaggerDefalut, apiManage, travelersApis, swagger } from './lib/api'
-import * as  chalk from 'chalk';
-import { srvsCode, Code } from './lib/code'
+import { SwaggerDefalut, apiManage, travelersApis, swagger } from "./lib/api";
+import * as chalk from "chalk";
+import { srvsCode, Code } from "./lib/code";
 import { Request, Response, NextFunction, RequestHandler, Express, ErrorRequestHandler } from "express";
 import * as express from "express";
 
 type travelersConfig<T> = {
     host?: String,
     port: number,
-} & T
+} & T;
 
 
-type Args = {
+interface Args {
     apis: {
         [key: string]: travelersApis
     },
@@ -21,7 +19,7 @@ type Args = {
     }
 }
 
-type travelersOption = {
+interface travelersOption {
     config: travelersConfig<any>,
     before?: (app: Express) => void,
     args: Args,
@@ -34,26 +32,26 @@ type travelersOption = {
 
 
 export async function travelers(option: travelersOption) {
-    const app = express()
+    const app = express();
 
-    let { config, before, args, swaggerDefalut, after, srvs } = option
-    const { host = '0.0.0.0', port = '3000' } = config
-    const { apis, controllers } = args
+    let { config, before, args, swaggerDefalut, after, srvs } = option;
+    const { host = "0.0.0.0", port = "3000" } = config;
+    const { apis, controllers } = args;
 
-    srvs = srvsCode(srvs)
-    if (before) before(app)
+    srvs = srvsCode(srvs);
+    if (before) before(app);
     app.use(express.json());
     app.use(express.urlencoded({ extended: false }));
     app.use((req: Request, res: Response, next: NextFunction) => {
-        req["srvs"] = srvs
-        next()
-    })
-    await apiManage(app, apis, controllers, swaggerDefalut, config)
-    if (after) after(app, { swagger })
+        req["srvs"] = srvs;
+        next();
+    });
+    await apiManage(app, apis, controllers, swaggerDefalut, config);
+    if (after) after(app, { swagger });
 
-    app.listen(port, `${host}`)
+    app.listen(port, `${host}`);
 
-    console.log(chalk.bold.red(`travelers start host:${host} prot:${port}`))
+    console.log(chalk.bold.red(`travelers start host:${host} prot:${port}`));
 
 }
 
@@ -82,5 +80,5 @@ interface App extends Express {
     $config: travelers.$config
 }
 
-export { Request, Response, NextFunction, RequestHandler, Express, ErrorRequestHandler, travelersApis, travelersOption, Code, App }
+export { Request, Response, NextFunction, RequestHandler, Express, ErrorRequestHandler, travelersApis, travelersOption, Code, App };
 
