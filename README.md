@@ -8,7 +8,6 @@ npm i travelers
 ```
 
 2. 使用
-import { travelers, travelersOption, travelersApis, travelersCtx } from 'travelers'
 
 ### src/apis/api.ts
 ```
@@ -39,20 +38,20 @@ let items: travelersApis = [
 
 ### src/controllers/controller.ts
 ```
-import { travelersCtx } from 'travelers'
-export async function everyDay_list(ctx: travelersCtx) {
-    let {  body, srvs } = ctx
-    const { knex  } = srvs
-    ctx.body = {
+import { Request, Response } from "travelers";
+export async function everyDay_list(req: Request, res: Response) {
+    let { body, srvs } = req
+    const { knex } = srvs
+    res.json({
         code: 200
-    }
+    })
 }
 
 ```
 
 ### src/index.ts
 ```
-import { travelersOption, travelers } from 'travelers'
+import { travelers, travelersOption,Response,Request,NextFunction } from 'travelers'
 import * as  apis from './apis/index'
 import * as  srvs from './srvs/index'
 import * as controllers from './controllers/index'
@@ -61,7 +60,7 @@ import config from './config/index'
 const option: travelersOption = {
   config,
   before: function (app) {
-    app.use(cors());
+    
   },
   srvs,
   args: {
@@ -69,7 +68,10 @@ const option: travelersOption = {
     controllers,
   },
   after: function (app, obj: any) {
-
+    app.use((req: Request, res: Response) => {
+      const { codes } = req.srvs
+      return codes.notfind.resJson(res)
+    })
   }
 }
 travelers(option)

@@ -15,7 +15,8 @@
     "url": "git+https://github.com/CQzhangshuai/travelers.git"
   },
   "keywords": [
-    "koa2",
+    "express",
+    "api",
     "joi",
     "swagger",
     "knex"
