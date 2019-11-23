@@ -81,6 +81,17 @@ declare module "express-serve-static-core" {
     }
 }
 
+declare module "express" {
+    interface Request {
+        srvs: travelers.Srvs
+        $config: travelers.$config
+        $operationId: string
+    }
+    interface Express {
+        srvs: travelers.Srvs
+        $config: travelers.$config
+    }
+}
 
 export { Request, Response, NextFunction, RequestHandler, Express, ErrorRequestHandler, travelersApis, travelersOption, Code, Config };
 
