@@ -35,16 +35,30 @@ let items: travelersApis = [
 export default items;
 ```
 
+### src/apis/index.ts
+```js
+import api from "./api";
+
+export { api };
+```
+
 ### src/controllers/controller.ts
 ```js
 import { Request, Response } from "travelers";
-export async function everyDay_list(req: Request, res: Response) {
+export async function operationId(req: Request, res: Response) {
     let { body, srvs } = req;
-    const { knex } = srvs;
-    res.json({
-        code: 200
-    });
+    const { knex, codes } = srvs;
+    codes.ok.resJson(res);
 }
+```
+
+### src/controllers/index.ts
+```js
+import * as controller from "./controller";
+const controllers = {
+    ...controller
+};
+export = controllers
 ```
 
 ### src/index.ts
