@@ -2,14 +2,14 @@
 
 import * as joi from "joi";
 import * as convert from "joi-to-json-schema";
-import { join } from "path";
 import * as path from "path";
-import { Request, Response, Express, NextFunction } from "../index";
+import * as express from "express";
+import { Request, Response, Express, NextFunction, Config } from "../index";
 import * as chalk from "chalk";
 import * as verify from "./verify";
-import * as express from "express";
+import * as fs from "fs";
 
-const swaggerDefalutSwagger = {
+const swaggerConfigDefalut = {
     swagger: "2.0",
     info: {
         title: "接口文档",
@@ -27,20 +27,8 @@ const swaggerDefalutSwagger = {
     ],
 };
 
-interface Info {
-    title: string,
-    description: string,
-    version: string,
-}
 
-interface SwaggerDefalut {
-    swagger?: string,
-    info?: Info,
-    host?: string,
-    basePath?: string,
-    schemes?: string[],
-    produces?: string[],
-}
+type SwaggerConfig = typeof swaggerConfigDefalut
 
 interface Reqeust {
     params?: {
@@ -63,6 +51,7 @@ interface ApiItem {
     description?: string;
     tags?: string[];
     operationId: string;
+    security?: string[];
     produces?: string[];
     req?: Reqeust;
     res?: Responses;
@@ -71,7 +60,7 @@ interface ApiItem {
 type travelersApis = ApiItem[]
 
 let swagger = {
-    ...swaggerDefalutSwagger,
+    ...swaggerConfigDefalut,
     paths: {}
 };
 
@@ -87,17 +76,17 @@ async function apiManage(
     app: Express,
     apis: ManageApis,
     controllers: ManageControllers,
-    swaggerDefalut: SwaggerDefalut = {},
-    config) {
-    const { port = "3000" } = config;
-    const host = "127.0.0.1";
+    config: Config
+) {
     verify.apiVerify(apis, controllers);
+    const { swaggerPath, swaggerConfig,port = "3000" } = config;
     Object.keys(apis).forEach(apiItem => {
         const items: travelersApis = apis[apiItem];
         items.forEach(item => {
-            const { path, method, summary = "默认", tags = [apiItem], description, operationId, req, res } = item;
+            const { path, method, summary = "默认", tags = [apiItem], security = [], description, operationId, req, res } = item;
             const { query, body, params } = req;
             const resBody = res.body;
+
             if (!swagger.paths[path]) {
                 swagger.paths[path] = {};
             }
@@ -185,15 +174,16 @@ async function apiManage(
         });
     });
 
-    swaggerDefalut.host = `${host}:${port}`;
-    swagger = { ...swagger, ...swaggerDefalut };
-    app.use("/document", express.static(path.join(__dirname, "../../swagger")));
+    swagger = { ...swagger, ...swaggerConfig };
+    app.use(swaggerPath, express.static(path.join(__dirname, "../../swagger")));
 
-    console.log(chalk.bold.red(`document you can click: http://${host}:${port}/document`));
-    app.get("/swagger", (req, res, next) => {
+    console.log(chalk.bold.red(`document you can click: http://127.0.0.1${port == 80?"":`:${port}`}${swaggerPath}`));
+    app.get(`${swaggerPath}/json`, (req, res, next) => {
         res.send(swagger);
     });
+    let swaggerUrlFile = `let swaggerUrl = "${swaggerPath}/json"`;
+    fs.writeFileSync(path.join(__dirname, "../../swagger/url.js"), swaggerUrlFile);
 }
 
 
-export { SwaggerDefalut, apiManage, travelersApis, swagger, ManageApis, ManageControllers };
+export { SwaggerConfig, apiManage, travelersApis, swagger, ManageApis, ManageControllers };

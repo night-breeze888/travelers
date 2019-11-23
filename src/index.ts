@@ -1,14 +1,8 @@
-import { SwaggerDefalut, apiManage, travelersApis, swagger } from "./lib/api";
+import { SwaggerConfig, apiManage, travelersApis, swagger } from "./lib/api";
 import * as chalk from "chalk";
 import { srvsCode, Code } from "./lib/code";
 import { Request, Response, NextFunction, RequestHandler, Express, ErrorRequestHandler } from "express";
 import * as express from "express";
-
-type travelersConfig<T> = {
-    host?: String,
-    port: number,
-} & T;
-
 
 interface Args {
     apis: {
@@ -19,22 +13,25 @@ interface Args {
     }
 }
 
+
+interface Config extends travelers.$config {
+    swaggerConfig: SwaggerConfig
+    swaggerPath: string
+}
+
 interface travelersOption {
-    config: travelersConfig<any>,
+    config: Config,
     before?: (app: Express) => void,
     args: Args,
-    srvs?: {
-        [key: string]: any
-    },
-    swaggerDefalut?: SwaggerDefalut,
-    after?: (app: Express, obj?: object) => void
+    srvs?: { [key: string]: any },
+    after?: (app: Express) => void
 }
+
 
 
 export async function travelers(option: travelersOption) {
     const app = express();
-
-    let { config, before, args, swaggerDefalut, after, srvs } = option;
+    let { config, before, args, after, srvs } = option;
     const { host = "0.0.0.0", port = "3000" } = config;
     const { apis, controllers } = args;
 
@@ -44,15 +41,18 @@ export async function travelers(option: travelersOption) {
     app.use(express.urlencoded({ extended: false }));
     app.use((req: Request, res: Response, next: NextFunction) => {
         req["srvs"] = srvs;
+        req["$config"] = config;
         next();
     });
-    await apiManage(app, apis, controllers, swaggerDefalut, config);
-    if (after) after(app, { swagger });
+    app["srvs"] = srvs;
+    app["$config"] = config;
+    await apiManage(app, apis, controllers, config);
+    if (after) after(app);
 
     app.listen(port, `${host}`);
 
     console.log(chalk.bold.red(`travelers start host:${host} prot:${port}`));
-
+    return { swagger };
 }
 
 
@@ -63,22 +63,24 @@ declare global {
             [k: string]: any;
         }
         interface $config {
-
+            [k: string]: any;
         }
     }
 }
 
-declare module "express" {
+
+declare module "express-serve-static-core" {
     interface Request {
+        srvs: travelers.Srvs
+        $config: travelers.$config
+        $operationId: string
+    }
+    interface Express {
         srvs: travelers.Srvs
         $config: travelers.$config
     }
 }
 
-interface App extends Express {
-    srvs: travelers.Srvs
-    $config: travelers.$config
-}
 
-export { Request, Response, NextFunction, RequestHandler, Express, ErrorRequestHandler, travelersApis, travelersOption, Code, App };
+export { Request, Response, NextFunction, RequestHandler, Express, ErrorRequestHandler, travelersApis, travelersOption, Code, Config };
 

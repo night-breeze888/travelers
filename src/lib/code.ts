@@ -25,7 +25,7 @@ const Code = {
     },
     $message: {
         code: 400,
-        msg: "$message"
+        msg: "${message}"
     }
 };
 
@@ -34,7 +34,7 @@ interface CodeType { [key: string]: { code: number, msg: string } }
 
 interface Result {
     [key: string]: {
-        resJson: (res: Response, args?: { [key: string]: string }) => void
+        resJson: (res: Response, args?: { [key: string]: string | number }) => void
     }
 }
 
@@ -51,11 +51,11 @@ function HttpCode(codeAll: CodeType) {
             };
         } else {
             result[key] = {
-                resJson: function (res, args) {
+                resJson: function (res, args = {}) {
                     let obj = codeAll[key];
                     Object.keys(args).forEach(objKey => {
-                        let replaceObj = `$${objKey}`;
-                        obj.msg = obj.msg.replace(replaceObj, args[objKey]);
+                        let replaceObj = "${" + objKey + "}";
+                        obj.msg = obj.msg.replace(replaceObj, `${args[objKey]}`);
                     });
                     res.status(codeAll[key].code).send(obj);
                 }
