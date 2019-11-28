@@ -44,8 +44,8 @@ export { api };
 
 ### src/controllers/controller.ts
 ```js
-import { Request, Response } from "travelers";
-export async function operationId(req: Request, res: Response) {
+import { Req, Res } from "travelers";
+export async function operationId(req: Req, res: Res) {
     let { body, srvs } = req;
     const { knex, codes } = srvs;
     codes.ok.resJson(res);
@@ -58,34 +58,37 @@ import * as controller from "./controller";
 const controllers = {
     ...controller
 };
-export = controllers
+export default controllers;
 ```
 
 ### src/index.ts
 ```js
-import { travelers, travelersOption,Response,Request,NextFunction } from "travelers";
+
+import { travelers, TravelersOption, Req, Res, NextFunction, Config } from "travelers";
 import * as apis from "./apis/index";
 import * as srvs from "./srvs/index";
-import * as controllers from "./controllers/index";
+import controllers from "./controllers/index";
 import config from "./config/index";
-const option: travelersOption = {
+import * as security from "./security";
+const option: TravelersOption = {
     config,
     before: function (app) {
-    
+
     },
     srvs,
-    args: {
-        apis,
-        controllers,
-    },
-    after: function (app, obj: any) {
-        app.use((req: Request, res: Response) => {
+    security,
+    apis,
+    controllers,
+    after: function (app, srvs) {
+        app.use((req: Req, res: Res) => {
             const { codes } = req.srvs;
             return codes.notfind.resJson(res);
         });
     }
 };
-travelers(option);
+travelers(option).then(data => {
+    // console.log(JSON.stringify(data, null, 4));
+});
 
 ```
 

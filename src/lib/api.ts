@@ -4,7 +4,7 @@ import * as joi from "joi";
 import * as convert from "joi-to-json-schema";
 import * as path from "path";
 import * as express from "express";
-import { Request, Response, Express, NextFunction, Config } from "../index";
+import { Req, Res, Express, NextFunction, Config } from "../index";
 import * as chalk from "chalk";
 import * as verify from "./verify";
 import * as fs from "fs";
@@ -21,9 +21,7 @@ const swaggerConfigDefalut = {
     schemes: ["http", "https"],
     produces: ["application/json"],
     security: [
-        {
-            "bearerAuth": []
-        }
+
     ],
 };
 
@@ -69,16 +67,23 @@ interface ManageApis {
 }
 
 interface ManageControllers {
-    [key: string]: (req: Request, res: Response) => Promise<any>
+    [key: string]: (req: Req, res: Res) => Promise<any>
 }
 
 async function apiManage(
     app: Express,
+    security:{
+        [key: string]: (req: Req, res: Res) => Promise<any>
+    },
     apis: ManageApis,
     controllers: ManageControllers,
     config: Config
 ) {
     verify.apiVerify(apis, controllers);
+    let selfSecurity = security;
+    Object.keys(security).forEach(_key => {
+        swagger.security.push({[_key]:[]});
+    });
     const { swaggerPath, swaggerConfig,port = "3000" } = config;
     Object.keys(apis).forEach(apiItem => {
         const items: travelersApis = apis[apiItem];
@@ -96,6 +101,7 @@ async function apiManage(
                 operationId,
                 parameters: [],
                 tags,
+                security,
                 responses: {
                     "200": {
                         description: "successful",
@@ -137,9 +143,12 @@ async function apiManage(
 
             let koaPath = path.replace(/}/g, "");
             koaPath = koaPath.replace(/{/g, ":");
-            app[method](koaPath, (req: Request, res: Response, next: NextFunction) => {
+            app[method](koaPath, (req: Req, res: Res, next: NextFunction) => {
                 (async function () {
                     // 验证
+                    for (const item of security) {
+                        if(selfSecurity[item]) await selfSecurity[item](req,res);
+                    }
                     const _query = item.req.query || {};
                     const _body = item.req.body || {};
                     const _params = item.req.params || {};

@@ -29,12 +29,12 @@ const Code = {
     }
 };
 
-import { Request, Response, Express, NextFunction } from "../index";
+import { Req, Res, Express, NextFunction } from "../index";
 interface CodeType { [key: string]: { code: number, msg: string } }
 
 interface Result {
     [key: string]: {
-        resJson: (res: Response, args?: { [key: string]: string | number }) => void
+        resJson: (res: Res, args?: { [key: string]: string | number }) => void
     }
 }
 

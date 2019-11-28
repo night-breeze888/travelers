@@ -4,38 +4,62 @@ import { srvsCode, Code } from "./lib/code";
 import { Request, Response, NextFunction, RequestHandler, Express, ErrorRequestHandler } from "express";
 import * as express from "express";
 
-interface Args {
-    apis: {
-        [key: string]: travelersApis
-    },
-    controllers: {
-        [key: string]: (req: Request, res: Response) => Promise<any>
+declare global {
+    namespace Travelers {
+        interface Srvs {
+            [k: string]: any;
+        }
+        interface Config {
+            [k: string]: any;
+        }
     }
 }
 
+interface Srvs extends Travelers.Srvs {
 
-interface Config extends travelers.$config {
+}
+
+interface Req extends Request {
+    srvs: Travelers.Srvs
+    $config: Travelers.Config
+}
+
+interface Res extends Response {
+
+}
+
+interface Config extends Travelers.Config {
+    host?: string
+    port: number
     swaggerConfig: SwaggerConfig
     swaggerPath: string
 }
 
-interface travelersOption {
+interface TravelersOption {
     config: Config,
     before?: (app: Express) => void,
-    args: Args,
+    security?: {
+        [key: string]: (req: Req, res: Res) => Promise<any>
+    },
+    apis: {
+        [key: string]: travelersApis
+    },
+    controllers: {
+        [key: string]: (req: Req, res: Res) => Promise<any>
+    }
     srvs?: { [key: string]: any },
-    after?: (app: Express) => void
+    after?: (app: Express, srvs: Travelers.Srvs) => void
 }
 
 
 
-export async function travelers(option: travelersOption) {
+export async function travelers(option: TravelersOption) {
     const app = express();
-    let { config, before, args, after, srvs } = option;
-    const { host = "0.0.0.0", port = "3000" } = config;
-    const { apis, controllers } = args;
+    let { config, before, security = {}, apis, controllers, after, srvs } = option;
+    const { host = "0.0.0.0", port = 3000 } = config;
 
     srvs = srvsCode(srvs);
+
     if (before) before(app);
     app.use(express.json());
     app.use(express.urlencoded({ extended: false }));
@@ -44,10 +68,9 @@ export async function travelers(option: travelersOption) {
         req["$config"] = config;
         next();
     });
-    app["srvs"] = srvs;
-    app["$config"] = config;
-    await apiManage(app, apis, controllers, config);
-    if (after) after(app);
+
+    await apiManage(app, security, apis, controllers, config);
+    if (after) after(app, srvs);
 
     app.listen(port, `${host}`);
 
@@ -56,42 +79,5 @@ export async function travelers(option: travelersOption) {
 }
 
 
-
-declare global {
-    namespace travelers {
-        interface Srvs {
-            [k: string]: any;
-        }
-        interface $config {
-            [k: string]: any;
-        }
-    }
-}
-
-
-declare module "express-serve-static-core" {
-    interface Request {
-        srvs: travelers.Srvs
-        $config: travelers.$config
-        $operationId: string
-    }
-    interface Express {
-        srvs: travelers.Srvs
-        $config: travelers.$config
-    }
-}
-
-declare module "express" {
-    interface Request {
-        srvs: travelers.Srvs
-        $config: travelers.$config
-        $operationId: string
-    }
-    interface Express {
-        srvs: travelers.Srvs
-        $config: travelers.$config
-    }
-}
-
-export { Request, Response, NextFunction, RequestHandler, Express, ErrorRequestHandler, travelersApis, travelersOption, Code, Config };
+export { Req, Res, NextFunction, RequestHandler, Express, ErrorRequestHandler, travelersApis, TravelersOption, Code, Config, Srvs };
 
