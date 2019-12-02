@@ -4,7 +4,7 @@ import * as joi from "joi";
 import * as convert from "joi-to-json-schema";
 import * as path from "path";
 import * as express from "express";
-import { Req, Res, Express, NextFunction, Config } from "../index";
+import { Req, Res, Express, NextFunction } from "../index";
 import * as chalk from "chalk";
 import * as verify from "./verify";
 import * as fs from "fs";
@@ -72,19 +72,20 @@ interface ManageControllers {
 
 async function apiManage(
     app: Express,
-    security:{
+    security: {
         [key: string]: (req: Req, res: Res) => Promise<any>
     },
     apis: ManageApis,
     controllers: ManageControllers,
-    config: Config
+    config: { [key: string]: any },
+    srvs
 ) {
     verify.apiVerify(apis, controllers);
     let selfSecurity = security;
     Object.keys(security).forEach(_key => {
-        swagger.security.push({[_key]:[]});
+        swagger.security.push({ [_key]: [] });
     });
-    const { swaggerPath, swaggerConfig,port = "3000" } = config;
+    const { swaggerPath, swaggerConfig, port = "3000" } = config;
     Object.keys(apis).forEach(apiItem => {
         const items: travelersApis = apis[apiItem];
         items.forEach(item => {
@@ -147,7 +148,7 @@ async function apiManage(
                 (async function () {
                     // 验证
                     for (const item of security) {
-                        if(selfSecurity[item]) await selfSecurity[item](req,res);
+                        if (selfSecurity[item]) await selfSecurity[item](req, res);
                     }
                     const _query = item.req.query || {};
                     const _body = item.req.body || {};
@@ -186,7 +187,8 @@ async function apiManage(
     swagger = { ...swagger, ...swaggerConfig };
     app.use(swaggerPath, express.static(path.join(__dirname, "../../swagger")));
 
-    console.log(chalk.bold.red(`document you can click: http://127.0.0.1${port == 80?"":`:${port}`}${swaggerPath}`));
+    srvs.logger.info(`document you can click: http://127.0.0.1${port == 80 ? "" : `:${port}`}${swaggerPath}`);
+
     app.get(`${swaggerPath}/json`, (req, res, next) => {
         res.send(swagger);
     });
