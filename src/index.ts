@@ -40,6 +40,7 @@ interface TravelersOption {
         [key: string]: (req: Req, res: Res) => Promise<any>
     }
     srvs?: { [key: string]: any },
+    ready?: (app: Express, srvs: Travelers.Srvs) => void,
     after?: (app: Express, srvs: Travelers.Srvs) => void
 }
 
@@ -47,7 +48,7 @@ interface TravelersOption {
 
 export async function travelers(option: TravelersOption) {
     const app = express();
-    let { config, before, security = {}, apis, controllers, after, srvs } = option;
+    let { config, before, security = {}, apis, controllers, ready, after, srvs } = option;
     const { host = "0.0.0.0", port = 3000 } = config;
     srvs.$config = config;
     srvs = srvsCode(srvs);
@@ -61,6 +62,7 @@ export async function travelers(option: TravelersOption) {
         next();
     });
 
+    if (ready) ready(app, srvs)
     await apiManage(app, security, apis, controllers, config, srvs);
     if (after) after(app, srvs);
 

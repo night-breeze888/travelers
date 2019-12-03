@@ -11,16 +11,22 @@ function srvsLogger(srvs) {
                 type: "file",
                 filename: log_path + "/info.log",
                 pattern: "yyyy-MM-dd.log",
+                alwaysIncludePattern: true,
+                backups: 3
             },
             all: {
                 type: "file",
                 filename: log_path + "/all.log",
                 pattern: "yyyy-MM-dd.log",
+                alwaysIncludePattern: true,
+                backups: 3
             },
             error: {
                 type: "file",
                 filename: log_path + "/error.log",
                 pattern: "yyyy-MM-dd.log",
+                alwaysIncludePattern: true,
+                backups: 3
             },
             console: {
                 type: "console"
