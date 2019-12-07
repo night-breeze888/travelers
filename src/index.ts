@@ -26,6 +26,7 @@ interface Res extends Response {
 
 }
 
+let exportSrvs: Travelers.Srvs;
 
 interface TravelersOption {
     config: { [key: string]: any },
@@ -62,16 +63,18 @@ export async function travelers(option: TravelersOption) {
         next();
     });
 
-    if (ready) ready(app, srvs)
+    if (ready) ready(app, srvs);
     await apiManage(app, security, apis, controllers, config, srvs);
     if (after) after(app, srvs);
 
     app.listen(port, `${host}`);
 
     srvs.logger.info(`travelers start host:${host} prot:${port}`);
-    return { swagger };
+    exportSrvs = srvs;
+    return { swagger, srvs };
 }
 
 
-export { Req, Res, NextFunction, RequestHandler, Express, ErrorRequestHandler, travelersApis, TravelersOption, Code, Srvs, Logger };
+export { Req, Res, NextFunction, RequestHandler, Express, ErrorRequestHandler, TravelersOption, Code, Srvs, Logger, travelersApis };
 
+export let srvs = exportSrvs;
