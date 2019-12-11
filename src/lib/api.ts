@@ -73,7 +73,7 @@ interface ManageControllers {
 async function apiManage(
     app: Express,
     security: {
-        [key: string]: (req: Req, res: Res) => Promise<any>
+        [key: string]: (req: Req, res: Res, next: NextFunction) => Promise<any>
     },
     apis: ManageApis,
     controllers: ManageControllers,
@@ -144,43 +144,47 @@ async function apiManage(
 
             let koaPath = path.replace(/}/g, "");
             koaPath = koaPath.replace(/{/g, ":");
-            app[method](koaPath, (req: Req, res: Res, next: NextFunction) => {
-                (async function () {
-                    // 验证
-                    for (const item of security) {
-                        if (selfSecurity[item]) await selfSecurity[item](req, res);
-                    }
-                    const _query = item.req.query || {};
-                    const _body = item.req.body || {};
-                    const _params = item.req.params || {};
-                    let { params, query, body } = req;
-                    try {
-                        let queryKeys = Object.keys(_query);
-                        for (const queryKey of queryKeys) {
-                            await joi.validate(query[queryKey], _query[queryKey]);
-                        }
-                        let paramsKeys = Object.keys(_params);
-                        for (const paramsKey of paramsKeys) {
-                            await joi.validate(params[paramsKey], _params[paramsKey]);
-                        }
-                        if (_body) await joi.validate(body, _body);
-                    } catch (error) {
-                        res.status(400).send(error);
-                        return;
-                    }
 
-                    try {
-                        if (controllers[item.operationId]) {
-                            const result = await controllers[item.operationId](req, res);
-                            if (result) res.json(result);
-                        } else {
-                            next();
-                        }
-                    } catch (error) {
-                        res.status(error.code || 500).send(error);
+            let funcs: any[] = [koaPath];
+
+            for (const securityItme of security) {
+                if (selfSecurity[securityItme]) funcs.push(selfSecurity[securityItme]);
+            }
+
+            funcs.push(async (req: Req, res: Res, next: NextFunction) => {
+                const _query = item.req.query || {};
+                const _body = item.req.body || {};
+                const _params = item.req.params || {};
+                let { params, query, body } = req;
+                try {
+                    let queryKeys = Object.keys(_query);
+                    for (const queryKey of queryKeys) {
+                        await joi.validate(query[queryKey], _query[queryKey]);
                     }
-                })();
+                    let paramsKeys = Object.keys(_params);
+                    for (const paramsKey of paramsKeys) {
+                        await joi.validate(params[paramsKey], _params[paramsKey]);
+                    }
+                    if (_body) await joi.validate(body, _body);
+                } catch (error) {
+                    res.status(400).send(error);
+                    return;
+                }
+
+                try {
+                    if (controllers[item.operationId]) {
+                        const result = await controllers[item.operationId](req, res);
+                        if (result) res.json(result);
+                    } else {
+                        next();
+                    }
+                } catch (error) {
+                    res.status(error.code || 500).send(error);
+                }
+
             });
+
+            app[method].apply(app, funcs);
         });
     });
 
