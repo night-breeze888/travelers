@@ -30,8 +30,8 @@ interface Res extends Response {
 interface TravelersOption {
     config: { [key: string]: any },
     before?: (app: Express) => void,
-    security?: {
-        [key: string]: (req: Req, res: Res) => Promise<any>
+    security: {
+        [key: string]: (req: Req, res: Res, next: NextFunction) => Promise<any>
     },
     apis: {
         [key: string]: travelersApis

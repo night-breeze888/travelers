@@ -1,6 +1,6 @@
 {
   "name": "travelers",
-  "version": "2.1.5",
+  "version": "2.1.6",
   "description": "I wanna write code like travelers",
   "main": "dist/index.js",
   "scripts": {
