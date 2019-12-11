@@ -1,6 +1,6 @@
 {
   "name": "travelers",
-  "version": "2.1.6",
+  "version": "2.1.7",
   "description": "I wanna write code like travelers",
   "main": "dist/index.js",
   "scripts": {
@@ -30,7 +30,6 @@
     "@types/express": "^4.17.2",
     "@types/joi": "^14.3.4",
     "@types/node": "^12.12.3",
-    "chalk": "^3.0.0",
     "express": "^4.17.1",
     "joi": "^14.3.1",
     "joi-to-json-schema": "^5.1.0",

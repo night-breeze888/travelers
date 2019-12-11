@@ -1,5 +1,4 @@
 import { apiManage, travelersApis, swagger } from "./lib/api";
-import * as chalk from "chalk";
 import { srvsCode, Code } from "./lib/code";
 import { Request, Response, NextFunction, RequestHandler, Express, ErrorRequestHandler } from "express";
 import * as express from "express";

@@ -5,7 +5,6 @@ import * as convert from "joi-to-json-schema";
 import * as path from "path";
 import * as express from "express";
 import { Req, Res, Express, NextFunction } from "../index";
-import * as chalk from "chalk";
 import * as verify from "./verify";
 import * as fs from "fs";
 
